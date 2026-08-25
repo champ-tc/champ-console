@@ -1,0 +1,31 @@
+'use client';
+import { useEffect, useState } from 'react';
+import type { Project, Task, TaskStatus, WorkData, WorkSection } from '../types';
+import { emptyWorkData, loadWorkData, makeId, saveWorkData } from '../storage';
+import WorkHeader from './work-header';
+import Dashboard from './dashboard';
+import TaskBoard from './task-board';
+import { ProjectModal } from './projects-view';
+import TaskModal from './task-modal';
+import SystemManager from './system-manager';
+import WorkCalendar from './work-calendar';
+
+export default function WorkApp(){
+  const [section,setSection]=useState<WorkSection>('dashboard'),[data,setData]=useState<WorkData>(emptyWorkData),[ready,setReady]=useState(false),[taskOpen,setTaskOpen]=useState(false),[editingTask,setEditingTask]=useState<Task|null>(null),[projectOpen,setProjectOpen]=useState(false),[editingProject,setEditingProject]=useState<Project|null>(null);
+  useEffect(()=>{setData(loadWorkData());const hash=location.hash.slice(1),stored=localStorage.getItem('CHAMP_WORK_SECTION'),valid=(value:string|null):value is WorkSection=>value==='dashboard'||value==='tasks'||value==='systems'||value==='calendar';const saved:WorkSection=valid(hash)?hash:valid(stored)?stored:'dashboard';setSection(saved);setReady(true)},[]);
+  useEffect(()=>{document.body.classList.add('work-readable');return()=>document.body.classList.remove('work-readable')},[]);
+  useEffect(()=>{if(ready)saveWorkData(data)},[data,ready]);
+  useEffect(()=>{if(ready){localStorage.setItem('CHAMP_WORK_SECTION',section);history.replaceState(null,'',section==='dashboard'?location.pathname:`#${section}`)}},[section,ready]);
+  const update=(fn:(current:WorkData)=>WorkData)=>setData(current=>fn(current));
+  const openTask=(task:Task|null=null,projectId='',folderId='')=>{setEditingTask(task);sessionStorage.setItem('CHAMP_TASK_PROJECT',task?.projectId||projectId);sessionStorage.setItem('CHAMP_TASK_FOLDER',task?.folderId||folderId);setTaskOpen(true)};
+  const openProject=(project:Project|null=null)=>{setEditingProject(project);setProjectOpen(true)};
+  const content=section==='dashboard'
+    ? <Dashboard tasks={data.tasks} projects={data.projects} onAddTask={()=>openTask()} onAddProject={()=>openProject()} onEditProject={openProject}/>
+    : section==='tasks'
+      ? <TaskBoard tasks={data.tasks} projects={data.projects} folders={data.folders} onAdd={(projectId,folderId)=>openTask(null,projectId,folderId)} onAddFolder={(projectId,name)=>update(current=>({...current,folders:[...current.folders,{id:makeId(),projectId,name,createdAt:new Date().toISOString()}]}))} onEdit={openTask} onStatus={(id,status:TaskStatus)=>update(current=>({...current,tasks:current.tasks.map(task=>task.id===id?{...task,status}:task)}))}/>
+      : section==='calendar'
+        ? <WorkCalendar tasks={data.tasks} projects={data.projects} systemLogs={data.systemLogs}/>
+        : <SystemManager logs={data.systemLogs} agencies={data.systemAgencies} vmSystems={data.vmSystems} websiteSystems={data.websiteSystems} onAddAgency={(name,shortName)=>update(current=>({...current,systemAgencies:[...current.systemAgencies,{id:makeId(),name,shortName:shortName||name.slice(0,8),createdAt:new Date().toISOString()}]}))} onSaveVm={(value,originalId)=>update(current=>({...current,vmSystems:originalId?current.vmSystems.map(system=>system.id===originalId?value:system):[value,...current.vmSystems]}))} onSaveWebsite={(value,originalId)=>update(current=>({...current,websiteSystems:originalId?current.websiteSystems.map(system=>system.id===originalId?value:system):[value,...current.websiteSystems]}))} onDeleteVm={id=>update(current=>({...current,vmSystems:current.vmSystems.filter(system=>system.id!==id)}))} onDeleteWebsite={id=>update(current=>({...current,websiteSystems:current.websiteSystems.filter(system=>system.id!==id)}))} onAdd={form=>update(current=>({...current,systemLogs:[{...form,id:makeId(),createdAt:new Date().toISOString()},...current.systemLogs]}))} onToggle={id=>update(current=>({...current,systemLogs:current.systemLogs.map(log=>log.id===id?{...log,completed:!log.completed}:log)}))} onDelete={id=>update(current=>({...current,systemLogs:current.systemLogs.filter(log=>log.id!==id)}))}/>;
+
+  return <div className="relative min-h-dvh overflow-hidden bg-[#f3f4f9] px-2 py-2 pb-24 text-[#171923] sm:px-4 sm:py-5 sm:pb-24 md:pb-5"><div className="pointer-events-none absolute -left-24 top-32 h-72 w-72 rounded-full bg-[#dcd9ff]/60 blur-3xl"/><div className="pointer-events-none absolute -right-24 top-8 h-80 w-80 rounded-full bg-[#d9fff3]/60 blur-3xl"/><div className="relative mx-auto min-h-[calc(100dvh-2.5rem)] w-full max-w-[1480px] overflow-hidden rounded-[30px] border border-white/80 bg-white/90 shadow-[0_30px_80px_-30px_rgba(35,39,70,.22)] backdrop-blur-xl"><WorkHeader active={section} onChange={setSection}/><main className="bg-[#fafbfc] px-4 py-8 sm:px-8 sm:py-10 lg:px-10 xl:px-12">{!ready?<div className="grid min-h-[50vh] place-items-center text-sm text-[#858997]">กำลังเตรียมพื้นที่ทำงาน...</div>:content}</main></div><p className="relative mx-auto mt-4 max-w-[1480px] text-center text-[10px] font-semibold tracking-[.08em] text-[#9ca0ae]">CHAMP-CONSOLE · WORKSPACE</p><TaskModal open={taskOpen} task={editingTask} projects={data.projects} folders={data.folders} onClose={()=>setTaskOpen(false)} onSave={form=>{update(current=>({...current,tasks:editingTask?current.tasks.map(task=>task.id===editingTask.id?{...task,...form}:task):[{...form,id:makeId(),createdAt:new Date().toISOString()},...current.tasks]}));setTaskOpen(false)}} onDelete={id=>{update(current=>({...current,tasks:current.tasks.filter(task=>task.id!==id)}));setTaskOpen(false)}}/><ProjectModal open={projectOpen} project={editingProject} onClose={()=>setProjectOpen(false)} onSave={form=>{update(current=>({...current,projects:editingProject?current.projects.map(project=>project.id===editingProject.id?{...project,...form}:project):[{...form,id:makeId(),createdAt:new Date().toISOString()},...current.projects]}));setProjectOpen(false)}} onDelete={id=>{update(current=>({...current,projects:current.projects.filter(project=>project.id!==id),folders:current.folders.filter(folder=>folder.projectId!==id),tasks:current.tasks.map(task=>task.projectId===id?{...task,projectId:'',folderId:''}:task)}));setProjectOpen(false)}}/></div>;
+}

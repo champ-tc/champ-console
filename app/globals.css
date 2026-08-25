@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+:root {
+  --background: #eef0f6;
+  --foreground: #14171f;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--background); }
+body { margin: 0; color: var(--foreground); background: var(--background); }
+a { color: inherit; }
+
+/* Keep the Work interface readable on high-density displays. */
+.work-readable { font-size: 16px; }
+.work-readable :is(button, input, select, textarea) { font-size: 14px; }
+.work-readable .text-xs { font-size: 14px; line-height: 1.55; }
+.work-readable .text-sm { font-size: 15px; line-height: 1.6; }
+.work-readable .text-\[11px\] { font-size: 13px; }
+.work-readable .text-\[10px\] { font-size: 12px; }
+.work-readable .text-\[9px\] { font-size: 11px; }
+.work-readable .text-\[8px\] { font-size: 10px; }
+.work-readable textarea.font-mono {
+  color: #111827 !important;
+  background: #f7f8fa !important;
+  border-color: #d9dde6 !important;
+  caret-color: #111827;
+}
+.work-readable textarea.font-mono::placeholder { color: #8b91a0 !important; }

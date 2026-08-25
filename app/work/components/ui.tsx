@@ -1,0 +1,9 @@
+import type { ReactNode } from 'react';
+
+export function SectionTitle({ eyebrow, title, description, actions }: { eyebrow:string; title:ReactNode; description:string; actions?:ReactNode }) {
+  return <div className="mb-7 flex flex-wrap items-end justify-between gap-5"><div><p className="inline-flex items-center gap-2 rounded-full border border-[#e7e8ef] bg-white px-3 py-1.5 text-[9px] font-extrabold tracking-[.16em] text-[#747889] shadow-sm"><span className="text-[#7c5cff]">✦</span>{eyebrow}</p><h1 className="mt-4 text-3xl font-extrabold tracking-[-.04em] text-[#171923] sm:text-[40px]">{title}</h1><p className="mt-2 max-w-xl text-sm leading-6 text-[#777b89]">{description}</p></div>{actions&&<div className="flex flex-wrap gap-2">{actions}</div>}</div>;
+}
+export function PrimaryButton({ children, onClick }: { children:ReactNode; onClick:()=>void }) { return <button onClick={onClick} className="rounded-full bg-[#171923] px-5 py-3 text-xs font-bold text-white shadow-[0_10px_24px_rgba(23,25,35,.18)] transition hover:-translate-y-0.5">{children}</button>; }
+export function GhostButton({ children, onClick }: { children:ReactNode; onClick:()=>void }) { return <button onClick={onClick} className="rounded-full border border-[#e1e4ed] bg-white px-5 py-3 text-xs font-bold text-[#333746] transition hover:border-[#cbc7fa] hover:bg-[#f8f7ff]">{children}</button>; }
+export function Empty({ title, detail }: { title:string; detail?:string }) { return <div className="grid min-h-40 place-items-center text-center"><div><span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#f0eeff] text-xl text-[#705cf4]">✦</span><strong className="mt-3 block text-sm">{title}</strong>{detail&&<p className="mt-1 text-xs text-[#999dab]">{detail}</p>}</div></div>; }
+export const panelClass = 'rounded-[24px] border border-[#e9eaf0] bg-white p-5 shadow-[0_8px_24px_rgba(31,35,48,.04)]';

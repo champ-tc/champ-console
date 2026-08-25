@@ -1,0 +1,11 @@
+'use client';
+import { useState } from 'react';
+import ToolShell from '../tool-shell';
+import styles from '../tool-ui.module.css';
+
+export default function RemoveBackground(){
+  const [file,setFile]=useState<File|null>(null),[source,setSource]=useState(''),[result,setResult]=useState(''),[busy,setBusy]=useState(false),[progress,setProgress]=useState(0),[error,setError]=useState('');
+  function choose(next:File){if(!next.type.startsWith('image/')){setError('กรุณาเลือกไฟล์รูปภาพ');return} if(source)URL.revokeObjectURL(source);if(result)URL.revokeObjectURL(result);setFile(next);setSource(URL.createObjectURL(next));setResult('');setError('');setProgress(0)}
+  async function remove(){if(!file)return;setBusy(true);setError('');setProgress(5);try{const {removeBackground}=await import('@imgly/background-removal');const blob=await removeBackground(file,{progress:(_key,current,total)=>setProgress(Math.round(current/total*100))});setResult(URL.createObjectURL(blob));setProgress(100)}catch{setError('ไม่สามารถประมวลผลรูปนี้ได้ กรุณาลองไฟล์ JPG หรือ PNG อื่น')}finally{setBusy(false)}}
+  return <ToolShell icon="✦" title="ลบพื้นหลัง" accent="AI" description="ประมวลผลบนอุปกรณ์ของคุณ รูปจะไม่ถูกอัปโหลดไปยังเซิร์ฟเวอร์"><div className={styles.panel}><label className={styles.drop}><input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>e.target.files?.[0]&&choose(e.target.files[0])}/><div><strong>{file?file.name:'คลิกเพื่อเลือกรูปภาพ'}</strong><span className={styles.hint}>รองรับ JPG, PNG และ WebP</span></div></label>{(source||result)&&<div className={styles.preview}><figure><img src={source} alt="ภาพต้นฉบับ"/><figcaption>ต้นฉบับ</figcaption></figure><figure>{result?<img src={result} alt="ภาพที่ลบพื้นหลังแล้ว"/>:<div className={styles.drop}>รอประมวลผล</div>}<figcaption>พื้นหลังโปร่งใส</figcaption></figure></div>}{busy&&<div className={styles.meter}><span style={{width:`${progress}%`}}/></div>}<div className={styles.actions}><button className={styles.button} disabled={!file||busy} onClick={remove}>{busy?`กำลังประมวลผล ${progress}%`:'ลบพื้นหลัง'}</button>{result&&<a className={styles.button+' '+styles.secondary} href={result} download={`${file?.name.replace(/\.[^.]+$/,'')}-no-bg.png`}>ดาวน์โหลด PNG</a>}</div>{error&&<div className={styles.result+' '+styles.error}>{error}</div>}</div></ToolShell>
+}

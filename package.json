@@ -1,0 +1,29 @@
+{
+  "name": "champ-console",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "26.2.0",
+    "@types/react": "19.2.18",
+    "tailwindcss": "^4.3.3",
+    "typescript": "7.0.2"
+  },
+  "dependencies": {
+    "@imgly/background-removal": "^1.7.0",
+    "bcryptjs": "^3.0.3",
+    "browser-image-compression": "^2.0.2",
+    "jszip": "^3.10.1",
+    "next": "^16.3.1",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.2.108",
+    "qr-code-styling": "^1.9.2",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  }
+}
